@@ -4,7 +4,7 @@
 
 Supports [libpq](https://www.postgresql.org/docs/current/libpq.html)
 
-[![Build Status](https://github.com/pgvector/pgvector-c/workflows/build/badge.svg?branch=master)](https://github.com/pgvector/pgvector-c/actions)
+[![Build Status](https://github.com/pgvector/pgvector-c/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/pgvector/pgvector-c/actions)
 
 ## Getting Started
 
