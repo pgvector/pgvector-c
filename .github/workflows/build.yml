@@ -15,5 +15,5 @@ jobs:
           cd pgvector
           make
           sudo make install
-      - run: gcc -Wall -Wextra -Werror -o test/pq test/pq_test.cpp -lpq
+      - run: gcc -Wall -Wextra -Werror -o test/pq test/pq_test.c -lpq
       - run: test/pq
