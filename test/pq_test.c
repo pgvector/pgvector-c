@@ -34,6 +34,10 @@ int main() {
     }
     PQclear(res);
 
+    res = PQexec(conn, "CREATE INDEX ON items USING hnsw (embedding vector_l2_ops)");
+    assert(PQresultStatus(res) == PGRES_COMMAND_OK);
+    PQclear(res);
+
     PQfinish(conn);
 
     return 0;
