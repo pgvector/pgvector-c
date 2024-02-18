@@ -43,9 +43,9 @@ PGresult *res = PQexecParams(conn, "SELECT * FROM items ORDER BY embedding <-> $
 Add an approximate index
 
 ```c
-PGresult *res = PQexec(conn, "CREATE INDEX ON items USING ivfflat (embedding vector_l2_ops) WITH (lists = 100)");
-// or
 PGresult *res = PQexec(conn, "CREATE INDEX ON items USING hnsw (embedding vector_l2_ops)");
+// or
+PGresult *res = PQexec(conn, "CREATE INDEX ON items USING ivfflat (embedding vector_l2_ops) WITH (lists = 100)");
 ```
 
 Use `vector_ip_ops` for inner product and `vector_cosine_ops` for cosine distance
