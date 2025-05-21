@@ -8,7 +8,7 @@
 #include <libpq-fe.h>
 
 // note: error handling omitted for simplicity
-char ** embed(const char **input, size_t input_size, char *api_key) {
+char ** embed(const char * const *input, size_t input_size, const char *api_key) {
     // prepare request
 
     CURL *curl = curl_easy_init();
