@@ -67,6 +67,7 @@ To get started with development:
 git clone https://github.com/pgvector/pgvector-c.git
 cd pgvector-c
 createdb pgvector_c_test
-gcc -Wall -Wextra -Werror -o test/pq test/pq_test.c -lpq
-test/pq
+cmake -S . -B build
+cmake --build build
+build/test
 ```

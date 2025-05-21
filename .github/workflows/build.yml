@@ -15,5 +15,6 @@ jobs:
           cd pgvector
           make
           sudo make install
-      - run: gcc -Wall -Wextra -Werror -I/usr/include/postgresql -o test/pq test/pq_test.c -lpq
-      - run: test/pq
+      - run: cmake -S . -B build
+      - run: cmake --build build
+      - run: build/test
