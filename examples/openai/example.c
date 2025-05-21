@@ -8,7 +8,7 @@
 #include <libpq-fe.h>
 
 // note: error handling omitted for simplicity
-const char ** embed(const char **input, size_t input_size, char *api_key) {
+char ** embed(const char **input, size_t input_size, char *api_key) {
     // prepare request
 
     CURL *curl = curl_easy_init();
@@ -58,7 +58,7 @@ const char ** embed(const char **input, size_t input_size, char *api_key) {
     cJSON *response_json = cJSON_Parse(response_data);
     cJSON *objects = cJSON_GetObjectItemCaseSensitive(response_json, "data");
 
-    const char **embeddings = malloc(sizeof(char *) * input_size);
+    char **embeddings = malloc(input_size * sizeof(char *));
     for (size_t i = 0; i < input_size; i++) {
         cJSON *object = cJSON_GetArrayItem(objects, i);
         cJSON *embedding = cJSON_GetObjectItemCaseSensitive(object, "embedding");
@@ -106,18 +106,18 @@ int main(void) {
         "The cat is purring",
         "The bear is growling"
     };
-    const char **embeddings = embed(input, 3, api_key);
+    char **embeddings = embed(input, 3, api_key);
     for (size_t i = 0; i < 3; i++) {
         const char *params[] = {input[i], embeddings[i]};
         res = PQexecParams(conn, "INSERT INTO documents (content, embedding) VALUES ($1, $2)", 2, NULL, params, NULL, NULL, 0);
         assert(PQresultStatus(res) == PGRES_COMMAND_OK);
         PQclear(res);
-        free((void *)embeddings[i]);
+        free(embeddings[i]);
     }
-    free((void *)embeddings);
+    free(embeddings);
 
     const char *query[] = {"forest"};
-    const char **query_embeddings = embed(query, 1, api_key);
+    char **query_embeddings = embed(query, 1, api_key);
     const char *query_params[] = {query_embeddings[0]};
     res = PQexecParams(conn, "SELECT content FROM documents ORDER BY embedding <=> $1 LIMIT 5", 1, NULL, query_params, NULL, NULL, 0);
     assert(PQresultStatus(res) == PGRES_TUPLES_OK);
@@ -126,8 +126,8 @@ int main(void) {
         printf("%s\n", PQgetvalue(res, i, 0));
     }
     PQclear(res);
-    free((void *)query_embeddings[0]);
-    free((void *)query_embeddings);
+    free(query_embeddings[0]);
+    free(query_embeddings);
 
     curl_global_cleanup();
 
