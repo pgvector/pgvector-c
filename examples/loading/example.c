@@ -6,7 +6,7 @@
 
 int main(void) {
     // TODO generate random data
-    int rows = 100000;
+    int rows = 1000000;
 
     PGconn *conn = PQconnectdb("postgres://localhost/pgvector_example");
     assert(PQstatus(conn) == CONNECTION_OK);
@@ -33,6 +33,12 @@ int main(void) {
     PQclear(res);
 
     for (int i = 0; i < rows; i++) {
+        // show progress
+        if (i % 10000 == 0) {
+            printf(".");
+            fflush(stdout);
+        }
+
         assert(PQputCopyData(conn, "[1,2,3]\n", 8) == 1);
     }
     assert(PQputCopyEnd(conn, NULL) == 1);
@@ -40,7 +46,7 @@ int main(void) {
     res = PQgetResult(conn);
     assert(PQresultStatus(res) == PGRES_COMMAND_OK);
     PQclear(res);
-    printf("Success!\n");
+    printf("\nSuccess!\n");
 
     // create any indexes *after* loading initial data (skipping for this example)
     bool create_index = false;
