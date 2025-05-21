@@ -65,7 +65,7 @@ char ** embed(const char * const *texts, size_t texts_size, const char *input_ty
     char **embeddings = malloc(texts_size * sizeof(char *));
     for (size_t i = 0; i < texts_size; i++) {
         cJSON *embedding_json = cJSON_GetArrayItem(ubinary, i);
-        char *embedding = malloc((1536 + 1) * sizeof(char));
+        char *embedding = malloc((cJSON_GetArraySize(embedding_json) * 8 + 1) * sizeof(char));
         int pos = 0;
         cJSON *v;
         cJSON_ArrayForEach(v, embedding_json) {
