@@ -12,6 +12,10 @@ Follow the instructions for your database library:
 
 - [libpq](#libpq)
 
+Or check out an example:
+
+- [Embeddings](https://github.com/pgvector/pgvector-c/blob/master/examples/openai/example.c) with OpenAI
+
 ## libpq
 
 Enable the extension
@@ -70,4 +74,14 @@ createdb pgvector_c_test
 cmake -S . -B build
 cmake --build build
 build/test
+```
+
+To run an example:
+
+```sh
+cd examples/openai
+createdb pgvector_example
+cmake -S . -B build
+cmake --build build
+build/example
 ```
