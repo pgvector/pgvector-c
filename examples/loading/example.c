@@ -1,12 +1,40 @@
+#include <arpa/inet.h>
 #include <assert.h>
+#include <limits.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include <libpq-fe.h>
 
+void write_uint16(char *buffer, int *pos, uint16_t v) {
+    uint16_t s = htons(v);
+    memcpy(buffer + *pos, &s, sizeof(uint16_t));
+    *pos += sizeof(uint16_t);
+}
+
+void write_uint32(char *buffer, int *pos, uint32_t v) {
+    uint32_t s = htonl(v);
+    memcpy(buffer + *pos, &s, sizeof(uint32_t));
+    *pos += sizeof(uint32_t);
+}
+
+void write_float(char *buffer, int *pos, float v) {
+    write_uint32(buffer, pos, *((uint32_t *)&v));
+}
+
 int main(void) {
-    // TODO generate random data
+    // generate random data
     int rows = 1000000;
+    int dimensions = 128;
+    float **embeddings = malloc(rows * sizeof(float *));
+    for (int i = 0; i < rows; i++) {
+        float *embedding = malloc(dimensions * sizeof(float));
+        for (int j = 0; j < dimensions; j++)
+            embedding[j] = rand() / (float)INT_MAX;
+        embeddings[i] = embedding;
+    }
 
     PGconn *conn = PQconnectdb("postgres://localhost/pgvector_example");
     assert(PQstatus(conn) == CONNECTION_OK);
@@ -21,16 +49,24 @@ int main(void) {
     PQclear(res);
 
     // create table
-    res = PQexec(conn, "CREATE TABLE items (id bigserial, embedding vector(3))");
+    res = PQexec(conn, "CREATE TABLE items (id bigserial, embedding vector(128))");
     assert(PQresultStatus(res) == PGRES_COMMAND_OK);
     PQclear(res);
 
     // load data
-    // TODO use binary format
     printf("Loading %d rows\n", rows);
-    res = PQexec(conn, "COPY items (embedding) FROM STDIN");
+    res = PQexec(conn, "COPY items (embedding) FROM STDIN WITH (FORMAT BINARY)");
     assert(PQresultStatus(res) == PGRES_COPY_IN);
     PQclear(res);
+
+    // write header
+    // https://www.postgresql.org/docs/current/sql-copy.html
+    char buffer[32768] = "PGCOPY\n\xFF\r\n\0";
+    int pos = 11;
+    write_uint32(buffer, &pos, 0);
+    write_uint32(buffer, &pos, 0);
+    assert(PQputCopyData(conn, buffer, pos) == 1);
+    pos = 0;
 
     for (int i = 0; i < rows; i++) {
         // show progress
@@ -39,8 +75,21 @@ int main(void) {
             fflush(stdout);
         }
 
-        assert(PQputCopyData(conn, "[1,2,3]\n", 8) == 1);
+        // write row
+        write_uint16(buffer, &pos, 1);
+        write_uint32(buffer, &pos, 4 + dimensions * sizeof(float));
+        write_uint16(buffer, &pos, dimensions);
+        write_uint16(buffer, &pos, 0);
+        for (int j = 0; j < dimensions; j++)
+            write_float(buffer, &pos, embeddings[i][j]);
+
+        assert(PQputCopyData(conn, buffer, pos) == 1);
+        pos = 0;
     }
+
+    // write trailer
+    write_uint16(buffer, &pos, -1);
+    assert(PQputCopyData(conn, buffer, pos) == 1);
     assert(PQputCopyEnd(conn, NULL) == 1);
 
     res = PQgetResult(conn);
@@ -72,6 +121,10 @@ int main(void) {
     PQclear(res);
 
     PQfinish(conn);
+
+    for (int i = 0; i < rows; i++)
+        free(embeddings[i]);
+    free(embeddings);
 
     return 0;
 }
