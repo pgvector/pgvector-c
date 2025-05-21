@@ -12,7 +12,7 @@ Follow the instructions for your database library:
 
 - [libpq](#libpq)
 
-Or check out an example:
+Or check out some examples:
 
 - [Embeddings](https://github.com/pgvector/pgvector-c/blob/master/examples/openai/example.c) with OpenAI
 - [Bulk loading](https://github.com/pgvector/pgvector-c/blob/master/examples/loading/example.c) with `COPY`
