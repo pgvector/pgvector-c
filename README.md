@@ -15,6 +15,7 @@ Follow the instructions for your database library:
 Or check out some examples:
 
 - [Embeddings](https://github.com/pgvector/pgvector-c/blob/master/examples/openai/example.c) with OpenAI
+- [Binary embeddings](https://github.com/pgvector/pgvector-c/blob/master/examples/cohere/example.c) with Cohere
 - [Bulk loading](https://github.com/pgvector/pgvector-c/blob/master/examples/loading/example.c) with `COPY`
 
 ## libpq
