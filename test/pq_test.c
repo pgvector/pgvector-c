@@ -1,7 +1,7 @@
 #include <assert.h>
 #include <libpq-fe.h>
 
-int main() {
+int main(void) {
     PGconn *conn;
     PGresult *res;
 
