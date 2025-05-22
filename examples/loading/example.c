@@ -69,12 +69,6 @@ int main(void) {
     pos = 0;
 
     for (int i = 0; i < rows; i++) {
-        // show progress
-        if (i % 10000 == 0) {
-            printf(".");
-            fflush(stdout);
-        }
-
         // write row
         write_uint16(buffer, &pos, 1);
         write_uint32(buffer, &pos, 4 + dimensions * sizeof(float));
@@ -85,6 +79,12 @@ int main(void) {
 
         assert(PQputCopyData(conn, buffer, pos) == 1);
         pos = 0;
+
+        // show progress
+        if (i % 10000 == 0) {
+            printf(".");
+            fflush(stdout);
+        }
     }
 
     // write trailer
