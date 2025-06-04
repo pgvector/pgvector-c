@@ -8,20 +8,20 @@
 
 #include <libpq-fe.h>
 
-void write_int16(char *buffer, int *pos, int16_t v) {
-    int16_t s = htons(v);
-    memcpy(buffer + *pos, &s, sizeof(int16_t));
-    *pos += sizeof(int16_t);
+void write_uint16(char *buffer, int *pos, uint16_t v) {
+    uint16_t s = htons(v);
+    memcpy(buffer + *pos, &s, sizeof(uint16_t));
+    *pos += sizeof(uint16_t);
 }
 
-void write_int32(char *buffer, int *pos, int32_t v) {
-    int32_t s = htonl(v);
-    memcpy(buffer + *pos, &s, sizeof(int32_t));
-    *pos += sizeof(int32_t);
+void write_uint32(char *buffer, int *pos, uint32_t v) {
+    uint32_t s = htonl(v);
+    memcpy(buffer + *pos, &s, sizeof(uint32_t));
+    *pos += sizeof(uint32_t);
 }
 
 void write_float(char *buffer, int *pos, float v) {
-    write_int32(buffer, pos, *((int32_t *)&v));
+    write_uint32(buffer, pos, *((uint32_t *)&v));
 }
 
 int main(void) {
@@ -63,17 +63,17 @@ int main(void) {
     // https://www.postgresql.org/docs/current/sql-copy.html
     char buffer[32768] = "PGCOPY\n\xFF\r\n\0";
     int pos = 11;
-    write_int32(buffer, &pos, 0);
-    write_int32(buffer, &pos, 0);
+    write_uint32(buffer, &pos, 0);
+    write_uint32(buffer, &pos, 0);
     assert(PQputCopyData(conn, buffer, pos) == 1);
     pos = 0;
 
     for (int i = 0; i < rows; i++) {
         // write row
-        write_int16(buffer, &pos, 1);
-        write_int32(buffer, &pos, 4 + dimensions * sizeof(float));
-        write_int16(buffer, &pos, dimensions);
-        write_int16(buffer, &pos, 0);
+        write_uint16(buffer, &pos, 1);
+        write_uint32(buffer, &pos, 4 + dimensions * sizeof(float));
+        write_uint16(buffer, &pos, dimensions);
+        write_uint16(buffer, &pos, 0);
         for (int j = 0; j < dimensions; j++)
             write_float(buffer, &pos, embeddings[i][j]);
 
@@ -88,7 +88,7 @@ int main(void) {
     }
 
     // write trailer
-    write_int16(buffer, &pos, -1);
+    write_uint16(buffer, &pos, -1);
     assert(PQputCopyData(conn, buffer, pos) == 1);
     assert(PQputCopyEnd(conn, NULL) == 1);
 
