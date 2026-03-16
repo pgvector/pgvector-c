@@ -21,12 +21,18 @@ int main(void) {
     PQclear(res);
 
     const char *paramValues[3] = {"[1,1,1]", "[2,2,2]", "[1,1,2]"};
-    res = PQexecParams(conn, "INSERT INTO items (embedding) VALUES ($1), ($2), ($3)", 3, NULL, paramValues, NULL, NULL, 0);
+    res = PQexecParams(
+        conn, "INSERT INTO items (embedding) VALUES ($1), ($2), ($3)", 3, NULL, paramValues, NULL,
+        NULL, 0
+    );
     assert(PQresultStatus(res) == PGRES_COMMAND_OK);
     PQclear(res);
 
     const char *paramValues2[1] = {"[1,1,1]"};
-    res = PQexecParams(conn, "SELECT * FROM items ORDER BY embedding <-> $1 LIMIT 5", 1, NULL, paramValues2, NULL, NULL, 0);
+    res = PQexecParams(
+        conn, "SELECT * FROM items ORDER BY embedding <-> $1 LIMIT 5", 1, NULL, paramValues2, NULL,
+        NULL, 0
+    );
     assert(PQresultStatus(res) == PGRES_TUPLES_OK);
     int ntuples = PQntuples(res);
     for (int i = 0; i < ntuples; i++) {

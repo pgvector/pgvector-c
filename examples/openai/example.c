@@ -8,7 +8,7 @@
 #include <libpq-fe.h>
 
 // note: error handling omitted for simplicity
-char ** embed(const char * const *input, size_t input_size, const char *api_key) {
+char **embed(const char *const *input, size_t input_size, const char *api_key) {
     // prepare request
 
     CURL *curl = curl_easy_init();
@@ -97,19 +97,21 @@ int main(void) {
     assert(PQresultStatus(res) == PGRES_COMMAND_OK);
     PQclear(res);
 
-    res = PQexec(conn, "CREATE TABLE documents (id bigserial PRIMARY KEY, content text, embedding vector(1536))");
+    res = PQexec(
+        conn,
+        "CREATE TABLE documents (id bigserial PRIMARY KEY, content text, embedding vector(1536))"
+    );
     assert(PQresultStatus(res) == PGRES_COMMAND_OK);
     PQclear(res);
 
-    const char *input[] = {
-        "The dog is barking",
-        "The cat is purring",
-        "The bear is growling"
-    };
+    const char *input[] = {"The dog is barking", "The cat is purring", "The bear is growling"};
     char **embeddings = embed(input, 3, api_key);
     for (size_t i = 0; i < 3; i++) {
         const char *params[] = {input[i], embeddings[i]};
-        res = PQexecParams(conn, "INSERT INTO documents (content, embedding) VALUES ($1, $2)", 2, NULL, params, NULL, NULL, 0);
+        res = PQexecParams(
+            conn, "INSERT INTO documents (content, embedding) VALUES ($1, $2)", 2, NULL, params,
+            NULL, NULL, 0
+        );
         assert(PQresultStatus(res) == PGRES_COMMAND_OK);
         PQclear(res);
         free(embeddings[i]);
@@ -119,7 +121,10 @@ int main(void) {
     const char *query[] = {"forest"};
     char **query_embeddings = embed(query, 1, api_key);
     const char *query_params[] = {query_embeddings[0]};
-    res = PQexecParams(conn, "SELECT content FROM documents ORDER BY embedding <=> $1 LIMIT 5", 1, NULL, query_params, NULL, NULL, 0);
+    res = PQexecParams(
+        conn, "SELECT content FROM documents ORDER BY embedding <=> $1 LIMIT 5", 1, NULL,
+        query_params, NULL, NULL, 0
+    );
     assert(PQresultStatus(res) == PGRES_TUPLES_OK);
     int ntuples = PQntuples(res);
     for (int i = 0; i < ntuples; i++) {
